@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoRA — Questions par Slide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #2a3a52;
+  --cyan: #22d3ee;
+  --cyan-dim: #0e7490;
+  --green: #34d399;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --purple: #a78bfa;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+.app { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 40px 20px 30px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 30px;
+}
+.header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  color: var(--cyan);
+  letter-spacing: -0.5px;
+}
+.header p {
+  color: var(--text-dim);
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+/* Person tabs */
+.person-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.person-tab {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.person-tab:hover { border-color: var(--cyan-dim); }
+.person-tab.active {
+  border-color: var(--cyan);
+  background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(34,211,238,0.02));
+  box-shadow: 0 0 20px rgba(34,211,238,0.1);
+}
+.person-tab .name {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.person-tab.active .name { color: var(--cyan); }
+.person-tab .slides-info {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Slide selector */
+.slide-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.slide-tab {
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  transition: all 0.2s;
+}
+.slide-tab:hover { border-color: var(--cyan-dim); color: var(--text); }
+.slide-tab.active {
+  background: var(--cyan);
+  color: var(--bg);
+  border-color: var(--cyan);
+  font-weight: 700;
+}
+
+/* Slide title */
+.slide-title {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--cyan);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn:hover { border-color: var(--cyan-dim); }
+.btn.active-btn { background: var(--cyan-dim); border-color: var(--cyan); color: white; }
+.counter {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Filter pills */
+.filter-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.pill[data-d="facile"] { border-color: var(--green); color: var(--green); }
+.pill[data-d="facile"].on { background: var(--green); color: var(--bg); }
+.pill[data-d="moyen"] { border-color: var(--yellow); color: var(--yellow); }
+.pill[data-d="moyen"].on { background: var(--yellow); color: var(--bg); }
+.pill[data-d="difficile"] { border-color: var(--red); color: var(--red); }
+.pill[data-d="difficile"].on { background: var(--red); color: var(--bg); }
+.pill[data-d="expert"] { border-color: var(--purple); color: var(--purple); }
+.pill[data-d="expert"].on { background: var(--purple); color: var(--bg); }
+
+/* Questions */
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.question-card:hover { border-color: var(--cyan-dim); }
+.question-header {
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  user-select: none;
+}
+.q-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.q-diff {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.q-diff.facile { background: rgba(52,211,153,0.15); color: var(--green); }
+.q-diff.moyen { background: rgba(251,191,36,0.15); color: var(--yellow); }
+.q-diff.difficile { background: rgba(248,113,113,0.15); color: var(--red); }
+.q-diff.expert { background: rgba(167,139,250,0.15); color: var(--purple); }
+.q-text {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+.q-chevron {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  transition: transform 0.2s;
+  margin-top: 2px;
+}
+.question-card.open .q-chevron { transform: rotate(90deg); }
+.answer {
+  display: none;
+  padding: 0 18px 16px 18px;
+  margin-left: 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.question-card.open .answer { display: block; }
+.answer p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+@media (max-width: 600px) {
+  .person-tab { min-width: 100%; }
+  .header h1 { font-size: 1.2rem; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>LoRA — Préparation Questions Orales</h1>
+    <p>Sélectionne ta personne, puis ta slide. Clique sur une question pour voir la réponse.</p>
+  </div>
+  <div class="person-tabs" id="personTabs"></div>
+  <div class="slide-tabs" id="slideTabs"></div>
+  <div class="slide-title" id="slideTitle"></div>
+  <div class="controls">
+    <button class="btn" id="btnToggle" onclick="toggleAll()">Tout ouvrir</button>
+    <div class="counter" id="counter"></div>
+  </div>
+  <div class="filter-row" id="filterRow"></div>
+  <div id="questions"></div>
+</div>
+
+<script>
+const DATA = {
+  persons: [
+    { id: 1, name: "Personne 1", slides: [2, 3], theme: "Problème & approches" },
+    { id: 2, name: "Personne 2", slides: [4, 5, 6], theme: "Architecture & mécanismes" },
+    { id: 3, name: "Personne 3", slides: [7, 8, 9], theme: "Théorie, entraînement & résultats" },
+    { id: 4, name: "Personne 4", slides: [10, 11], theme: "Limites & positionnement" }
+  ],
+  slides: {
+    2: {
+      title: "Slide 2 — Le goulot d'étranglement de l'adaptation",
+      questions: [
+        {d:"facile",q:"Combien de paramètres possède le modèle SDXL mentionné dans la slide ?",a:"SDXL possède environ 3,5 milliards de paramètres."},
+        {d:"facile",q:"Quel type de GPU est requis pour un full fine-tuning de SDXL ?",a:"Des GPU NVIDIA A100, avec 80 Go de VRAM chacun."},
+        {d:"facile",q:"Quels sont les trois obstacles au fine-tuning complet présentés sur cette slide ?",a:"Le coût computationnel, le surapprentissage (overfitting), et l'oubli catastrophique (catastrophic forgetting)."},
+        {d:"facile",q:"Qu'est-ce que le surapprentissage dans le contexte du fine-tuning ?",a:"Le modèle mémorise les exemples d'entraînement au lieu de généraliser. Il reproduit ses données de training mais perd sa capacité à traiter de nouvelles entrées."},
+        {d:"facile",q:"Qu'est-ce que le catastrophic forgetting ?",a:"C'est quand la modification directe des poids originaux du modèle détruit irrémédiablement les capacités générales acquises lors du pré-entraînement."},
+        {d:"moyen",q:"Pourquoi le surapprentissage est-il particulièrement grave quand on fine-tune sur 20 images ?",a:"Parce qu'un modèle de milliards de paramètres a une capacité bien supérieure à ce que 20 images peuvent enseigner. Il va mémoriser ces 20 exemples au lieu d'apprendre des patterns généralisables. Le ratio paramètres/données est extrêmement déséquilibré."},
+        {d:"moyen",q:"Pourquoi le coût financier du fine-tuning est-il qualifié de 'prohibitif' ?",a:"Plusieurs GPU A100 coûtent des dizaines de milliers d'euros chacun, les heures de calcul s'accumulent, et il faut potentiellement stocker un modèle complet par variante (plusieurs Go chacun). C'est inaccessible pour la plupart des équipes."},
+        {d:"moyen",q:"Quelle est la différence entre overfitting et catastrophic forgetting ?",a:"L'overfitting = le modèle apprend trop bien les données d'entraînement et ne généralise plus. Le catastrophic forgetting = le modèle oublie ses connaissances antérieures en les écrasant avec les nouvelles. L'un concerne la généralisation, l'autre la rétention."},
+        {d:"moyen",q:"Sur le graphique de la slide, pourquoi la validation loss remonte-t-elle ?",a:"C'est le signe classique du surapprentissage. Le modèle continue à réduire sa training loss en mémorisant les données, mais sa capacité à généraliser (mesurée par la validation loss) se dégrade progressivement."},
+        {d:"moyen",q:"Pourquoi 80 Go de VRAM sont-ils nécessaires ?",a:"Pour stocker simultanément les poids du modèle (en float32 ou float16), les activations intermédiaires, les gradients, et les états de l'optimiseur (Adam stocke 2 moments par paramètre). Tout cela pour 3,5 milliards de paramètres."},
+        {d:"difficile",q:"Comment le catastrophic forgetting est-il lié à la plasticité-stabilité du réseau ?",a:"C'est le dilemme stabilité-plasticité : un réseau doit être assez plastique pour apprendre de nouvelles tâches, mais assez stable pour retenir les anciennes. Le fine-tuning complet maximise la plasticité au détriment total de la stabilité, d'où la perte des connaissances antérieures."},
+        {d:"difficile",q:"Pourquoi l'optimiseur Adam aggrave-t-il le problème de VRAM ?",a:"Adam maintient deux moments (moyenne mobile du gradient et du gradient au carré) pour chaque paramètre entraînable. Pour un modèle de 3,5B paramètres en float32, cela représente 2 × 3,5B × 4 octets = ~28 Go de VRAM supplémentaire rien que pour l'optimiseur."},
+        {d:"difficile",q:"Si le problème est l'overfitting sur peu de données, pourquoi ne pas simplement augmenter le dataset ?",a:"Parce que dans de nombreux cas d'usage (personnalisation de sujet, adaptation de domaine médical), les données sont intrinsèquement rares ou coûteuses à obtenir. On ne peut pas toujours avoir 10 000 images d'un personnage fictif ou d'un type de tumeur rare."},
+        {d:"difficile",q:"Comment le gradient descent full modifie-t-il l'espace des features internes du modèle de manière destructrice ?",a:"Chaque mise à jour des poids déplace les représentations internes. Sans contrainte, les gradients sur la nouvelle tâche poussent les features dans des directions optimales pour cette tâche mais qui éloignent les représentations des patterns appris lors du pré-entraînement. Les couches partagées ne peuvent pas simultanément encoder ancien et nouveau."},
+        {d:"expert",q:"Si on avait un budget VRAM illimité, le full fine-tuning serait-il quand même problématique ? Pourquoi ?",a:"Oui, car le problème de VRAM n'est qu'un obstacle parmi trois. Même avec assez de mémoire, le surapprentissage sur peu de données et l'oubli catastrophique persistent. Le modèle sur-apprend les exemples et perd ses capacités générales. Il faudrait aussi un très large dataset et des techniques comme la prior preservation loss pour contrer ces effets."},
+        {d:"expert",q:"Comment le catastrophic forgetting se manifeste-t-il concrètement dans un modèle de diffusion ?",a:"Le modèle perd la capacité de générer des objets/scènes qu'il savait produire avant. Par exemple, après un fine-tuning sur des visages, il peut oublier comment dessiner des paysages, des animaux, ou produire du texte cohérent dans les images. Les distributions internes sont écrasées."},
+        {d:"expert",q:"Pourquoi le nombre de paramètres entraînables est-il directement lié au risque d'overfitting avec peu de données ?",a:"C'est le principe de la complexité du modèle vs la taille du dataset. Un modèle avec N paramètres peut théoriquement mémoriser N points de données indépendants. Avec 3,5 milliards de paramètres et 20 images, le modèle a une capacité astronomiquement supérieure aux données, donc il mémorise plutôt qu'il n'apprend."},
+        {d:"expert",q:"Quelles alternatives au fine-tuning complet existaient avant LoRA pour lutter contre le catastrophic forgetting ?",a:"EWC (Elastic Weight Consolidation) pénalise les changements aux poids importants pour les tâches précédentes. Progressive Neural Networks gèle les colonnes existantes et en ajoute de nouvelles. Knowledge Distillation utilise le modèle original comme enseignant. PackNet, PathNet, et les méthodes de replay de mémoire sont aussi des approches antérieures."},
+        {d:"facile",q:"Quel est l'objectif principal de LoRA tel que formulé en bas de la slide ?",a:"Adapter un modèle massif en n'entraînant qu'une fraction infime des paramètres, sans altérer l'architecture originale."},
+        {d:"moyen",q:"Pourquoi stocker un modèle complet par variante est-il problématique en production ?",a:"Chaque variante fait plusieurs Go (ex: 7 Go pour SDXL). Si on veut 100 variantes (styles, sujets…), il faut 700 Go de stockage et autant de mémoire pour le chargement. Ce n'est pas scalable en termes de coût de stockage et de temps de chargement."}
+      ]
+    },
+    3: {
+      title: "Slide 3 — Limites des approches antérieures",
+      questions: [
+        {d:"facile",q:"Combien de paramètres sont entraînés dans le Full Fine-Tuning ?",a:"100% des paramètres du modèle."},
+        {d:"facile",q:"Quel est le principal avantage de LoRA par rapport aux Adapter Layers en inférence ?",a:"LoRA n'ajoute aucune latence supplémentaire à l'inférence (latence identique au modèle original), alors que les Adapter Layers ajoutent de la latence car ils sont en série dans le calcul."},
+        {d:"facile",q:"Que fait le Prefix Tuning ?",a:"Il ajoute des tokens virtuels (appris) à l'entrée du modèle pour conditionner sa génération, sans modifier les poids du modèle."},
+        {d:"facile",q:"Que fait BitFit ?",a:"BitFit n'entraîne que les termes de biais (bias) du modèle, soit moins de 0,1% des paramètres."},
+        {d:"facile",q:"Quelle est la fourchette de paramètres entraînés par LoRA ?",a:"Entre 0,1% et 1% des paramètres du modèle."},
+        {d:"moyen",q:"Pourquoi les Adapter Layers ajoutent-ils de la latence en inférence ?",a:"Parce que les modules adapter sont insérés en série dans le graphe de calcul. Chaque forward pass doit traverser ces couches supplémentaires séquentiellement, ce qui ajoute du temps de calcul à chaque inférence."},
+        {d:"moyen",q:"Pourquoi le Prefix Tuning est-il considéré comme 'moins expressif' ?",a:"Parce qu'il n'agit que sur l'espace d'entrée du modèle (les tokens) sans modifier les poids internes. Les modifications de poids internes permettent des adaptations plus profondes et plus fines du comportement du modèle."},
+        {d:"moyen",q:"Comment LoRA atteint-il zéro latence supplémentaire à l'inférence ?",a:"Grâce à la fusion des matrices : on calcule W_fusionné = W₀ + B·A avant le déploiement. La matrice résultante a la même taille que W₀, donc le modèle déployé est architecturalement identique à l'original."},
+        {d:"moyen",q:"Pourquoi BitFit est-il trop limité pour des adaptations sérieuses ?",a:"Les biais ne représentent qu'une infime partie de la capacité expressive du réseau. Ils ajustent les seuils d'activation mais ne modifient pas les directions des projections linéaires. Pour des adaptations complexes (nouveau style, nouveau domaine), cette expressivité est largement insuffisante."},
+        {d:"moyen",q:"Quel est le compromis historique que LoRA résout selon la synthèse de la slide ?",a:"Le compromis entre expressivité et coût. Avant LoRA, les méthodes économiques (BitFit, Prefix) avaient une qualité limitée, et les méthodes de haute qualité (Full FT) avaient un coût prohibitif. LoRA offre une expressivité maximale avec un coût très faible et latence nulle."},
+        {d:"difficile",q:"Les Adapter Layers (Houlsby et al., 2019) insèrent des modules MLP entre les couches. Décrivez leur architecture interne.",a:"Un adapter typique consiste en : une projection descendante (d → r) qui compresse les features, une non-linéarité (ReLU/GELU), une projection montante (r → d) qui re-projette, et une connexion résiduelle (skip connection) autour du tout. Placé après les couches attention et FFN."},
+        {d:"difficile",q:"Pourquoi le Prompt Tuning est-il sensible à l'initialisation ?",a:"Les soft prompts sont optimisés par gradient descent dans un espace continu de haute dimension. Selon l'initialisation (aléatoire vs vocabulaire), la trajectoire d'optimisation change drastiquement. Un mauvais point de départ peut mener à des minima locaux sous-optimaux, et la surface de loss est souvent non-convexe."},
+        {d:"difficile",q:"LoRA et BitFit ont tous les deux une latence identique à l'inférence. Pourquoi leurs mécanismes sont-ils si différents ?",a:"BitFit ne touche que les biais, qui font déjà partie de l'architecture — rien à fusionner. LoRA ajoute des matrices A et B qui doivent être fusionnées avec W₀ avant déploiement. Le résultat final est le même (même architecture, même taille), mais le mécanisme d'apprentissage est fondamentalement différent : biais simples vs décomposition de bas rang."},
+        {d:"difficile",q:"Si les Adapter Layers ont un bon ratio qualité/paramètres, pourquoi n'ont-ils pas été adoptés massivement en production ?",a:"La latence supplémentaire en inférence est rédhibitoire en production industrielle. Dans un pipeline de génération temps-réel ou un service API, chaque milliseconde compte. La latence série des adapters ne peut pas être éliminée par fusion comme LoRA, ce qui les rend impraticables à l'échelle."},
+        {d:"expert",q:"Le Prefix Tuning et LoRA modifient tous deux moins de 1% des paramètres. Expliquez pourquoi LoRA produit de meilleurs résultats.",a:"Le Prefix Tuning agit uniquement sur l'espace d'entrée (tokens ajoutés), ce qui limite les modifications aux first-layer representations. LoRA modifie directement les matrices de projection dans les couches d'attention, ce qui affecte le flux d'information à travers tout le réseau. De plus, LoRA cible les couches les plus expressives (attention), alors que le Prefix influence indirectement toutes les couches de manière uniforme et plus faible."},
+        {d:"expert",q:"Pourrait-on combiner Prefix Tuning et LoRA ensemble ? Quel serait l'intérêt ?",a:"Oui, c'est techniquement possible et certains travaux l'explorent (MAM Adapter, UniPELT). L'intérêt serait de cumuler un conditionnement au niveau de l'entrée (Prefix) avec des modifications au niveau des projections internes (LoRA). Cela peut capturer des adaptations à différentes granularités, mais complexifie le tuning des hyperparamètres."},
+        {d:"expert",q:"Pourquoi dit-on que LoRA est le 'standard de facto' dans l'industrie ?",a:"Trois raisons convergent : 1) zéro latence en inférence grâce à la fusion, 2) fichiers LoRA très légers (~100 Mo vs 7 Go) permettant de stocker/servir des centaines de variantes, 3) qualité comparable au full fine-tuning. Cette combinaison est inégalée par aucune autre méthode PEFT et a été massivement adoptée par Hugging Face, CivitAI, Replicate, etc."},
+        {d:"facile",q:"Quel est le coût VRAM de LoRA comparé au Full Fine-Tuning ?",a:"LoRA a un coût VRAM 'très faible' contre 'très élevé' pour le Full Fine-Tuning. Typiquement ~6 Go vs ~80 Go pour SDXL."},
+        {d:"moyen",q:"En quoi la latence est-elle un critère critique en production ?",a:"En production, les utilisateurs attendent des réponses rapides. Chaque milliseconde de latence supplémentaire impacte l'expérience utilisateur, la scalabilité du service, et le coût d'infrastructure (plus de temps GPU par requête). Un service qui génère des images doit être rapide pour être viable économiquement."},
+        {d:"difficile",q:"Comment fonctionne exactement la connexion résiduelle dans les Adapter Layers et pourquoi est-elle nécessaire ?",a:"L'output de l'adapter est ajouté à l'input via une skip connection : output = input + adapter(input). Sans cette connexion résiduelle, l'adapter pourrait perturber les représentations de manière destructrice. La skip connection assure qu'au minimum, les informations originales sont préservées, et l'adapter n'apporte qu'un delta correctif."}
+      ]
+    },
+    4: {
+      title: "Slide 4 — Un mécanisme d'adaptation universel",
+      questions: [
+        {d:"facile",q:"Quels sont les trois domaines d'application de LoRA présentés sur cette slide ?",a:"Les modèles de diffusion (images), les grands modèles de langage (LLM), et les modèles de décision (RL)."},
+        {d:"facile",q:"Que signifie RLHF ?",a:"Reinforcement Learning from Human Feedback — l'apprentissage par renforcement à partir des préférences humaines."},
+        {d:"facile",q:"Que signifie 'transfert de politique' dans le contexte RL ?",a:"C'est le fait d'adapter un agent entraîné dans un environnement (ex: simulation) à un nouvel environnement (ex: monde réel) sans ré-entraîner le backbone complet."},
+        {d:"facile",q:"Donnez un exemple d'adaptation de domaine en modèles de diffusion.",a:"L'imagerie médicale : adapter un modèle de diffusion généraliste pour générer des images de type IRM, scanner, histologie, etc."},
+        {d:"facile",q:"Que signifie 'multi-task RL' avec LoRA ?",a:"Chaque tâche a son propre adaptateur LoRA, mais tous les LoRA partagent le même réseau de base (backbone commun)."},
+        {d:"moyen",q:"Pourquoi LoRA est-il utile dans le pipeline RLHF des LLMs ?",a:"Dans RLHF, il y a une phase de fine-tuning supervisé (SFT) qui est coûteuse. LoRA réduit drastiquement le coût de cette phase en n'entraînant qu'une fraction des paramètres, rendant RLHF accessible à des équipes avec moins de ressources."},
+        {d:"moyen",q:"Comment le 'conditionnement de politique via embeddings appris' fonctionne-t-il ?",a:"Au lieu de modifier la politique directement, on utilise des embeddings de tâche qui passent par les matrices LoRA. Ces embeddings servent de signal de conditionnement : selon l'embedding injecté, l'agent adopte un comportement différent sans changer le backbone."},
+        {d:"moyen",q:"Pourquoi la personnalisation de style et la personnalisation de sujet sont-elles des cas d'usage distincts ?",a:"La personnalisation de style modifie comment le modèle génère (texture, couleurs, trait artistique). La personnalisation de sujet modifie quoi le modèle génère (un visage spécifique, un objet précis). Ce sont des modifications à différents niveaux des représentations internes."},
+        {d:"moyen",q:"En quoi LoRA dans les LLMs diffère-t-il de LoRA dans les modèles de diffusion ?",a:"Le principe est identique (bypass bas rang sur les matrices d'attention), mais la loss diffère (cross-entropy pour les LLMs, MSE sur le bruit pour la diffusion), les couches cibles peuvent varier, et les données d'entraînement sont de nature très différente (texte vs images + prompts)."},
+        {d:"moyen",q:"Pourquoi le multi-task RL avec LoRA est-il plus efficace qu'un modèle séparé par tâche ?",a:"Parce qu'au lieu de stocker N modèles complets pour N tâches, on stocke 1 backbone + N petits LoRA. Cela économise de la mémoire de stockage, permet un chargement dynamique rapide, et chaque LoRA bénéficie des représentations générales du backbone partagé."},
+        {d:"difficile",q:"Comment LoRA est-il utilisé concrètement dans le transfert sim-to-real en robotique ?",a:"Le backbone est pré-entraîné en simulation où les données sont abondantes et gratuites. Puis, un LoRA est entraîné avec les données du monde réel (plus rares et coûteuses). Le LoRA capture le 'domain gap' entre simulation et réalité (différences de physique, capteurs, friction…) sans perdre les compétences acquises en simulation."},
+        {d:"difficile",q:"Expliquez pourquoi LoRA peut servir de 'ciment' dans des pipelines multimodaux.",a:"LoRA est compatible avec d'autres techniques (ControlNet pour le spatial, IP-Adapter pour le style zero-shot). Grâce à la fusion, il ne modifie pas l'architecture, donc il peut être combiné avec des modules additionnels. Il sert de couche d'adaptation qui 'colle' les différentes composantes du pipeline ensemble."},
+        {d:"difficile",q:"Quel est l'avantage du conditionnement par embedding LoRA vs un conditionnement classique par concaténation d'embedding ?",a:"La concaténation d'embedding augmente la dimensionnalité de l'entrée et ne modifie pas les poids du réseau. Le conditionnement via LoRA modifie les projections internes elles-mêmes, permettant une adaptation plus profonde et plus expressive du comportement, tout en restant paramètriquement efficace."},
+        {d:"expert",q:"En RL multi-task, comment gère-t-on le chargement dynamique de LoRA selon la tâche pendant l'inférence ?",a:"Deux approches : 1) Fusion préalable : on fusionne le LoRA de la tâche souhaitée avec le backbone (W + BA) avant l'inférence, changement par rechargement. 2) Chargement dynamique : le backbone reste en VRAM et on swap uniquement les petites matrices A et B (~Mo) selon la tâche. La méthode 2 est plus rapide pour du multi-task fréquent car les matrices LoRA sont très légères."},
+        {d:"expert",q:"Pourquoi LoRA est-il particulièrement adapté au fine-tuning RLHF comparé aux autres méthodes PEFT ?",a:"RLHF implique des mises à jour fréquentes et itératives (reward model → policy → évaluation). LoRA est idéal car : 1) la fusion permet une inférence rapide pour l'évaluation, 2) le faible nombre de paramètres accélère chaque étape d'optimisation, 3) le rollback est trivial (retirer le LoRA = revenir au modèle de base), 4) on peut sauvegarder des checkpoints LoRA très légers à chaque étape."},
+        {d:"moyen",q:"Donnez un exemple concret de 'personnalisation de sujet' avec LoRA.",a:"Entraîner un LoRA sur 10-20 photos d'un personnage fictif (ex: une mascotte d'entreprise) pour que le modèle puisse la générer dans n'importe quelle pose, décor ou situation, tout en conservant son apparence spécifique (coiffure, couleur, proportions)."},
+        {d:"facile",q:"Quel domaine est le FOCUS de cette présentation ?",a:"Les modèles de décision (RL) — c'est le focus principal, comme indiqué sur la slide avec le label 'FOCUS'."},
+        {d:"difficile",q:"Comparez le coût de personnalisation d'un agent RL via LoRA vs via full fine-tuning en termes concrets.",a:"Full FT : nécessite de re-stocker l'intégralité du réseau (~Go), nécessite beaucoup de données de la nouvelle tâche, risque de catastrophic forgetting sur les tâches précédentes. LoRA : fichier de quelques Mo, 80% moins de données, convergence 3-5x plus rapide, préservation des capacités originales. En termes de temps GPU, LoRA peut réduire les coûts de facteur 10-50x."},
+        {d:"expert",q:"Comment les architectures de type Decision Transformer s'intègrent-elles avec LoRA ?",a:"Les Decision Transformers traitent le RL comme un problème de séquence (états, actions, rewards comme tokens). LoRA s'applique aux mêmes matrices d'attention (W_q, W_k, W_v) que dans un LLM classique. Cela permet d'adapter le Decision Transformer à de nouveaux environnements en ne modifiant que les projections d'attention, tout en préservant les capacités de planification générales."},
+        {d:"moyen",q:"Que signifie 'instruction following' dans le contexte des LLMs ?",a:"C'est la capacité d'un LLM à suivre des instructions données en langage naturel. Par exemple, 'Résume ce texte en 3 points' ou 'Traduis en français'. LoRA peut entraîner un modèle brut à mieux suivre ce type d'instructions sans full fine-tuning."}
+      ]
+    },
+    5: {
+      title: "Slide 5 — Architecture LoRA : Le bypass de bas rang",
+      questions: [
+        {d:"facile",q:"Quelle est la formule fondamentale de LoRA ?",a:"W' = W₀ + ΔW = W₀ + B · A"},
+        {d:"facile",q:"Que représente W₀ dans la formule ?",a:"Les poids originaux du modèle, qui sont gelés (non entraînés) pendant le fine-tuning LoRA."},
+        {d:"facile",q:"Quelles sont les dimensions de la matrice A ?",a:"A est de dimension r × k, où r est le rang et k la dimension d'entrée de la couche."},
+        {d:"facile",q:"Pourquoi B est-elle initialisée à zéro ?",a:"Pour garantir que B·A = 0 au départ, donc W' = W₀. Le modèle commence exactement là où il était, assurant une stabilité mathématique parfaite."},
+        {d:"facile",q:"Qu'est-ce que le rang r dans LoRA ?",a:"C'est l'hyperparamètre central qui contrôle la dimension du sous-espace de la décomposition. Typiquement entre 4 et 64."},
+        {d:"moyen",q:"Calculez le nombre de paramètres LoRA pour une couche 1024×1024 avec r=16.",a:"Matrice A : r × k = 16 × 1024 = 16 384. Matrice B : d × r = 1024 × 16 = 16 384. Total = 32 768 paramètres, soit ~3% de la couche originale (1 048 576 paramètres)."},
+        {d:"moyen",q:"Pourquoi A est-elle initialisée avec une gaussienne et pas à zéro ?",a:"Si A et B étaient toutes les deux à zéro, le produit B·A resterait toujours zéro et aucun gradient ne pourrait passer (gradient nul). A doit être non-nulle pour que les gradients puissent se propager à travers le bypass et permettre l'apprentissage. L'initialisation gaussienne brise la symétrie."},
+        {d:"moyen",q:"Qu'est-ce que le 'bypass' dans le contexte de cette architecture ?",a:"Le bypass est le chemin parallèle au chemin principal. L'entrée passe simultanément par W₀ (gelé) et par le couple A→B (entraînable). Les deux sorties sont additionnées. Ce bypass permet de modifier le comportement du modèle sans toucher aux poids originaux."},
+        {d:"moyen",q:"Comment la fusion à l'inférence fonctionne-t-elle mathématiquement ?",a:"Avant le déploiement, on calcule W_merged = W₀ + B·A. Cette nouvelle matrice a exactement les mêmes dimensions que W₀ (d × k). On remplace W₀ par W_merged dans le modèle. L'architecture est identique, pas de branche parallèle, pas de calcul supplémentaire."},
+        {d:"moyen",q:"Pourquoi dit-on que la matrice A 'compresse' l'entrée ?",a:"A projette un vecteur de dimension k vers un vecteur de dimension r, avec r << k. Par exemple, de 1024 vers 16 : c'est une compression de facteur 64. Ce goulot d'étranglement force le modèle à identifier les directions les plus importantes."},
+        {d:"difficile",q:"Expliquez mathématiquement pourquoi le rang r contrôle la capacité expressive du LoRA.",a:"Le produit B·A est une matrice de dimension d × k mais de rang au plus r (car c'est un produit de deux matrices dont la dimension intermédiaire est r). Cela signifie que ΔW = B·A ne peut représenter que des modifications dans un sous-espace de dimension r. Plus r est élevé, plus l'espace des modifications possibles est grand, mais plus on approche du full fine-tuning."},
+        {d:"difficile",q:"Que se passerait-il si on initialisait B avec une gaussienne au lieu de zéro ?",a:"Le produit B·A serait non nul au départ, donc W' ≠ W₀ dès le premier pas. Le modèle partirait d'un point aléatoirement perturbé, ce qui pourrait destabiliser l'entraînement, produire des sorties incohérentes au début, et potentiellement empêcher la convergence. L'initialisation à zéro de B est donc un choix de stabilité crucial."},
+        {d:"difficile",q:"Si r = k, quelle est la différence avec le full fine-tuning ?",a:"Si r = k, les matrices A (k×k) et B (d×k) ont autant de paramètres totaux que W₀ elle-même. Le bypass peut représenter n'importe quelle matrice ΔW de rang plein. On perd tout l'avantage de compression. Mais W₀ reste gelé, donc on n'a toujours que les gradients sur A et B — les états de l'optimiseur ne portent pas sur W₀, ce qui économise encore de la VRAM."},
+        {d:"difficile",q:"Comment le gradient est-il calculé dans le bypass LoRA lors de la rétropropagation ?",a:"Par la chain rule : ∂L/∂A = ∂L/∂(B·A·x) · ∂(B·A·x)/∂A = Bᵀ · (∂L/∂y) · xᵀ. De même, ∂L/∂B = (∂L/∂y) · (A·x)ᵀ. Les gradients ne traversent PAS W₀ (gelé), ils ne passent que par le chemin B·A. Cela réduit drastiquement la mémoire nécessaire pour stocker les gradients et les états de l'optimiseur."},
+        {d:"expert",q:"Pourquoi LoRA est-il lié à la SVD tronquée et comment cette connexion justifie-t-elle le choix de l'architecture ?",a:"La meilleure approximation de rang r d'une matrice est sa SVD tronquée (théorème d'Eckart-Young). Si ΔW a une faible dimension intrinsèque, sa SVD tronquée capture l'essentiel de l'information. LoRA apprend essentiellement cette décomposition par descente de gradient : B et A convergent vers les r directions les plus importantes de ΔW. La différence est que LoRA n'a pas besoin de calculer la SVD explicitement."},
+        {d:"expert",q:"Quel est le lien entre le facteur d'échelle alpha/r et le learning rate dans l'optimisation de LoRA ?",a:"Le scaling factor α/r contrôle l'amplitude de la modification ΔW appliquée. Un grand α/r amplifie les mises à jour de LoRA. Cela interagit directement avec le learning rate : si α/r est trop élevé et le LR aussi, les mises à jour sont trop agressives et déstabilisent l'entraînement. En pratique, on fixe souvent α = r pour avoir un scaling de 1, et on contrôle l'amplitude uniquement via le learning rate."},
+        {d:"expert",q:"Pourquoi LoRA permet-il un learning rate plus élevé que le full fine-tuning (1e-4 à 1e-3 vs 1e-5 à 1e-4) ?",a:"Parce que LoRA part d'un point stable (W' = W₀ grâce à l'init zéro de B) et ne modifie que quelques directions dans l'espace des paramètres. Les gradients sont donc plus stables et la surface de loss locale est plus lisse. En full FT, modifier tous les paramètres à la fois crée des interactions complexes entre gradients, nécessitant un LR plus prudent."},
+        {d:"facile",q:"Que représente le cadenas sur W₀ dans le schéma ?",a:"Il indique que W₀ est gelé : ses poids ne sont pas mis à jour pendant l'entraînement. Aucun gradient ne le traverse."},
+        {d:"moyen",q:"Que se passe-t-il si on choisit r=1 ?",a:"Avec r=1, A est un vecteur (1×k) et B est un vecteur (d×1). Le produit B·A est une matrice de rang 1, donc ΔW ne peut capturer qu'une seule direction de modification. C'est très limité mais peut suffire pour des changements de style très simples."},
+        {d:"expert",q:"En quoi l'architecture bypass de LoRA diffère-t-elle d'une connexion résiduelle classique ?",a:"Dans une connexion résiduelle classique (ResNet), on a y = f(x) + x, où f est entraînable et x est l'identité. Dans LoRA, on a y = W₀·x + B·A·x, où W₀ est gelé et BA est entraînable. La différence est que le chemin 'principal' (W₀) est une transformation apprise au pré-entraînement (pas l'identité), et le bypass (BA) est contraint à être de bas rang. C'est une connexion résiduelle dans l'espace des poids, pas dans l'espace des features."}
+      ]
+    },
+    6: {
+      title: "Slide 6 — Injection du signal de conditionnement",
+      questions: [
+        {d:"facile",q:"Quelles sont les trois matrices de projection ciblées par LoRA dans un transformeur ?",a:"W_q (Query), W_k (Key), et W_v (Value) dans les couches d'attention."},
+        {d:"facile",q:"Qu'est-ce que la cross-attention dans un modèle de diffusion ?",a:"C'est le mécanisme qui permet au signal de conditionnement (ex: le texte du prompt) d'influencer la génération de l'image. Le texte est encodé et injecté via les couches d'attention."},
+        {d:"facile",q:"Que signifie 'fusion à l'inférence' dans cette slide ?",a:"Avant le déploiement, les matrices LoRA sont mathématiquement fusionnées avec les matrices originales : W_fusionné = W₀ + B·A. Le modèle résultant est identique en architecture à l'original."},
+        {d:"facile",q:"Pourquoi dit-on que LoRA apprend à 'orienter l'attention' du modèle ?",a:"En modifiant les matrices de projection Q, K, V, LoRA change la façon dont le modèle calcule les scores d'attention. Il apprend donc quelles parties de l'entrée sont importantes pour les nouveaux concepts."},
+        {d:"moyen",q:"Pourquoi W_q et W_v sont-elles souvent ciblées en priorité plutôt que W_k ?",a:"C'est une heuristique empirique issue des expériences du papier original. W_q et W_v contrôlent respectivement les requêtes (ce que le modèle cherche) et les valeurs (ce qui est retourné). Modifier ces deux matrices donne le meilleur ratio impact/paramètres. W_k a un rôle plus structurel de matching."},
+        {d:"moyen",q:"Qu'est-ce que W_o mentionnée dans la slide et quel est son rôle ?",a:"W_o est la matrice de projection de sortie de la couche d'attention. Elle projette la sortie multi-head concaténée vers l'espace de la couche suivante. LoRA peut aussi cibler cette matrice pour contrôler la sortie finale de l'attention."},
+        {d:"moyen",q:"Comment le signal de conditionnement (texte) est-il encodé avant d'arriver aux couches d'attention ?",a:"Le texte est tokenisé puis encodé par un text encoder (typiquement CLIP pour Stable Diffusion). Les embeddings résultants sont injectés dans la cross-attention : le texte fournit les Keys et Values, tandis que les features de l'image fournissent les Queries."},
+        {d:"moyen",q:"Pourquoi la zéro latence est-elle possible alors qu'on a modifié les matrices d'attention ?",a:"Parce qu'après fusion, la matrice W_fusionné = W₀ + B·A a exactement la même taille que W₀. Le calcul de l'attention utilise cette matrice fusionnée de la même manière qu'il utilisait W₀. Il n'y a pas de calcul supplémentaire, pas de branche parallèle."},
+        {d:"difficile",q:"Dans un modèle de diffusion, pourquoi cibler la cross-attention est-il plus efficace que cibler la self-attention ?",a:"La cross-attention est le point d'interface entre le texte (conditionnement) et l'image (génération). C'est là que le prompt influence le contenu généré. En modifiant ces couches, LoRA agit directement sur la façon dont le modèle interprète le prompt. La self-attention traite les relations spatiales internes de l'image, qui sont plus universelles et moins liées à un sujet/style spécifique."},
+        {d:"difficile",q:"Si chaque matrice Q, K, V a son propre couple (A, B), combien de paramètres LoRA cela fait-il par couche d'attention pour un modèle de dimension 768 avec r=8 ?",a:"Pour chaque matrice Q, K, V, O (4 matrices) : A = 8×768 = 6144 paramètres, B = 768×8 = 6144 paramètres. Par matrice = 12 288. Pour 4 matrices = 49 152 paramètres. Si on ne cible que Q et V = 24 576 paramètres par couche."},
+        {d:"difficile",q:"Comment le mécanisme d'attention calcule-t-il les scores et comment LoRA modifie-t-il ce calcul ?",a:"Attention(Q,K,V) = softmax(Q·Kᵀ / √d_k) · V. Avec LoRA, Q = (W_q + B_q·A_q)·x et V = (W_v + B_v·A_v)·x. Les scores d'attention changent car les queries et values sont modifiées. Le modèle 'regarde' différemment les relations entre tokens, en se concentrant sur les features pertinentes pour la nouvelle tâche."},
+        {d:"difficile",q:"Pourquoi la matrice de projection de sortie W_o est-elle aussi une cible pertinente pour LoRA ?",a:"W_o détermine comment les informations des différentes têtes d'attention sont combinées et projetées vers la couche suivante. En modifiant W_o, LoRA peut changer la pondération entre les têtes, supprimant ou amplifiant certaines perspectives. C'est un point de levier puissant car il agrège l'information de toutes les têtes."},
+        {d:"expert",q:"Dans l'architecture d'un UNet (Stable Diffusion), à quels niveaux de résolution les couches d'attention sont-elles placées, et cela impacte-t-il le choix des LoRA ?",a:"Les couches d'attention sont typiquement dans les résolutions moyennes et basses (32×32, 16×16, 8×8) du UNet, pas dans les résolutions hautes (64×64+). LoRA sur les couches basse résolution affecte la structure sémantique globale (sujet, composition), tandis que sur les résolutions plus hautes, il affecterait les détails fins. Le choix des couches cibles dépend donc du type d'adaptation souhaitée."},
+        {d:"expert",q:"Comment peut-on défusionner un LoRA après la fusion pour revenir au modèle original ?",a:"C'est simple mathématiquement : W₀ = W_fusionné − B·A. Il suffit de stocker les matrices A et B séparément. C'est l'un des avantages clés de LoRA : le modèle original est toujours récupérable. On peut aussi stocker W₀ original et recharger le modèle sans le LoRA. La fusion est réversible."},
+        {d:"moyen",q:"Pourquoi le concept de 'ne pas changer le cerveau mais apprendre à regarder les bonnes choses' est-il une bonne analogie pour LoRA ?",a:"Parce que LoRA ne modifie pas le backbone (le 'cerveau' du modèle) mais change les projections d'attention (la façon de 'regarder'). Le modèle garde toutes ses connaissances générales mais apprend à focaliser son attention sur les features pertinentes pour la nouvelle tâche."},
+        {d:"facile",q:"Quelle est la formule de fusion indiquée sur la slide ?",a:"W_fusionné = W₀ + B · A"},
+        {d:"expert",q:"En multi-head attention, applique-t-on un LoRA par tête ou un LoRA global pour toutes les têtes ?",a:"En pratique, un LoRA global est appliqué sur la matrice W_q, W_v, etc. complète (toutes les têtes concaténées). Le rang r est partagé entre toutes les têtes. Certains travaux explorent des LoRA par tête (GQA-LoRA) pour une granularité plus fine, mais le standard est un LoRA global par matrice."},
+        {d:"moyen",q:"Pourquoi les couches de cross-attention sont-elles le point d'injection naturel du conditionnement dans la diffusion ?",a:"Parce que la cross-attention met en relation deux modalités différentes : les features de l'image (en construction) et les embeddings du texte. C'est le seul endroit où le prompt texte 'communique' avec le processus de génération d'image. Modifier ces couches, c'est modifier directement comment le prompt est compris et traduit en image."},
+        {d:"difficile",q:"Peut-on appliquer LoRA aux couches MLP (feed-forward) du transformeur ? Quel serait l'effet ?",a:"Oui, c'est techniquement possible et certains travaux le font. Les couches MLP stockent des connaissances factuelles et traitent les features de manière point-wise. LoRA sur les MLP peut modifier les représentations internes de manière plus directe. L'effet dépend de la tâche : pour des adaptations de connaissances (domaine), cibler les MLP peut être plus pertinent que l'attention."},
+        {d:"facile",q:"Quel est le résultat garanti par la fusion en termes d'architecture ?",a:"Le modèle déployé est architecturalement identique à l'original. La matrice fusionnée a exactement la même taille que W₀, donc zéro surcoût à l'inférence."}
+      ]
+    },
+    7: {
+      title: "Slide 7 — L'hypothèse de la faible dimension intrinsèque",
+      questions: [
+        {d:"facile",q:"Qu'est-ce que l'hypothèse de la faible dimension intrinsèque ?",a:"L'idée que les mises à jour utiles ΔW lors d'un fine-tuning vivent dans un sous-espace de très faible dimension par rapport à l'espace total des paramètres."},
+        {d:"facile",q:"Qu'est-ce que la SVD (Singular Value Decomposition) ?",a:"C'est une décomposition d'algèbre linéaire qui factorise toute matrice M en U·Σ·Vᵀ, où Σ contient les valeurs singulières ordonnées. La SVD tronquée donne la meilleure approximation de rang r."},
+        {d:"facile",q:"Quel rang r est recommandé pour un changement de style simple ?",a:"Un rang faible, r = 1 à 4, avec un coût VRAM minimal."},
+        {d:"facile",q:"Quel rang est considéré comme le 'sweet spot' standard ?",a:"r = 8 à 16, offrant une bonne expressivité avec un coût VRAM faible. C'est le rang standard pour la personnalisation de sujet."},
+        {d:"facile",q:"Quels risques associe-t-on à un rang r ≥ 64 ?",a:"Un coût VRAM modéré et un risque d'overfitting accru, bien que l'expressivité soit très bonne. Ce rang est réservé aux adaptations complexes."},
+        {d:"moyen",q:"Pourquoi les valeurs singulières de ΔW décroissent-elles rapidement pour une adaptation de fine-tuning ?",a:"Parce que la plupart des poids du modèle sont déjà proches de l'optimum pour la nouvelle tâche. Les modifications nécessaires sont concentrées dans quelques directions principales. Les valeurs singulières mesurent l'importance de chaque direction : les premières captent l'essentiel, les suivantes ajoutent de moins en moins."},
+        {d:"moyen",q:"Comment la SVD justifie-t-elle théoriquement l'architecture de LoRA ?",a:"Le théorème d'Eckart-Young dit que la meilleure approximation de rang r d'une matrice est sa SVD tronquée. LoRA apprend essentiellement cette approximation : B et A convergent vers les r directions les plus significatives de ΔW. La décomposition B·A est structurellement analogue à U·Σ·Vᵀ tronquée."},
+        {d:"moyen",q:"Un rang trop faible 'rate l'adaptation'. Que signifie cela concrètement ?",a:"Le sous-espace de dimension r est trop petit pour capturer toutes les directions de changement nécessaires. Certaines modifications importantes sont projetées à zéro. Le modèle adapté ne capture qu'une partie de ce qu'il devrait apprendre. Par exemple, il peut apprendre le visage d'un personnage mais pas sa coiffure."},
+        {d:"moyen",q:"Pourquoi un rang trop élevé conduit-il au surapprentissage ?",a:"Avec un rang élevé, le LoRA a suffisamment de capacité pour mémoriser les données de training plutôt que d'apprendre des patterns généralisables. Le sous-espace est assez grand pour encoder les détails spécifiques de chaque exemple au lieu de capturer les caractéristiques communes."},
+        {d:"difficile",q:"Comment le rang intrinsèque d'un problème d'adaptation peut-il être estimé empiriquement ?",a:"On entraîne des LoRA avec différents rangs et on mesure la performance sur un set de validation. On trace la courbe performance vs rang : elle sature à un certain point, indiquant le rang intrinsèque. On peut aussi analyser les valeurs singulières de ΔW obtenu par full FT : le point où elles chutent indique la dimension intrinsèque."},
+        {d:"difficile",q:"Expliquez pourquoi la décomposition B·A de LoRA ne donne pas exactement la SVD optimale.",a:"La SVD donne la décomposition optimale au sens de la norme de Frobenius, mais LoRA ne minimise pas cette norme directement. LoRA optimise une loss de tâche (MSE, cross-entropy, etc.), ce qui peut mener à une factorisation différente de la SVD. De plus, l'optimisation par gradient descent peut rester dans un minimum local. Cependant, la connexion est forte : dans la plupart des cas, LoRA converge vers une décomposition proche de la SVD tronquée."},
+        {d:"difficile",q:"Pourquoi les cas d'usage en RL (transferts profonds) nécessitent-ils typiquement un rang plus élevé que le style simple ?",a:"Le transfert de politique RL implique des modifications plus complexes : le domain gap entre simulation et réalité affecte de nombreuses dimensions (physique, capteurs, dynamique). Contrairement à un changement de style (quelques filtres visuels), l'adaptation RL nécessite de modifier les représentations internes sur de nombreuses dimensions simultanément."},
+        {d:"expert",q:"Comment le concept de 'dimension intrinsèque' est-il lié à la théorie de l'apprentissage et à la borne de généralisation ?",a:"En théorie de l'apprentissage, la complexité d'un modèle influence sa capacité de généralisation (borne PAC, dimension VC, complexité de Rademacher). Si les modifications utiles vivent dans un espace de dimension r << d, la complexité effective du fine-tuning est r, pas d. Cela explique pourquoi LoRA généralise bien avec peu de données : la 'vraie' complexité du problème est r, pas les milliards de paramètres du modèle."},
+        {d:"expert",q:"La SVD tronquée est optimale pour la norme de Frobenius. LoRA est-il optimal pour la loss de la tâche ?",a:"Non nécessairement. La SVD tronquée minimise ‖M - M_r‖_F, mais la loss de la tâche est une fonction différente (cross-entropy, MSE sur le bruit, etc.). LoRA optimise directement la loss de la tâche, ce qui peut donner une factorisation de rang r qui est meilleure pour la tâche mais pire en termes de norme de Frobenius par rapport à la SVD tronquée. C'est en fait un avantage : LoRA priorise les directions les plus utiles pour la tâche."},
+        {d:"moyen",q:"Comment le tableau de la slide aide-t-il un praticien à choisir le rang r pour son projet ?",a:"Le praticien identifie son cas d'usage : simple changement de style → r=1-4, personnalisation de sujet standard → r=8-16, adaptation complexe ou transfert RL profond → r=64+. Puis il équilibre avec ses contraintes de VRAM et le risque d'overfitting sur son dataset."},
+        {d:"facile",q:"Qu'est-ce que le 'Full Rank space' montré sur la slide ?",a:"C'est l'espace complet de la matrice originale, de dimension d × k. C'est le cube montré à gauche sur la slide."},
+        {d:"facile",q:"Qu'est-ce que le 'Low-Rank Subspace' ?",a:"C'est le sous-espace de faible dimension dans lequel vivent les modifications utiles ΔW. Il est représenté par la forme plus petite à droite sur la slide."},
+        {d:"difficile",q:"Si on entraîne un LoRA de rang 64 mais que le rang intrinsèque est 8, que se passe-t-il ?",a:"Les 56 dimensions supplémentaires n'apportent pas d'information utile. Elles peuvent capter du bruit dans les données de training (overfitting). En pratique, les valeurs singulières de B·A pour ces dimensions seront proches de zéro. Le modèle utilise effectivement ~8 dimensions et gaspille les 56 autres en mémoire et en risque de surapprentissage."},
+        {d:"expert",q:"Comment les travaux sur la 'dimension intrinsèque' (Aghajanyan et al., 2021) ont-ils motivé le développement de LoRA ?",a:"Aghajanyan et al. ont montré empiriquement que les modèles pré-entraînés ont une dimension intrinsèque d'adaptation de 90% = quelques centaines à quelques milliers, contre des millions de paramètres. Cela signifie qu'on peut trouver un sous-espace de très faible dimension dans lequel l'optimisation est presque aussi efficace. LoRA exploite directement cette observation en paramétrant ΔW comme un produit de bas rang."},
+        {d:"moyen",q:"Pourquoi le coût VRAM augmente-t-il avec le rang ?",a:"Les matrices A (r×k) et B (d×r) grandissent linéairement avec r. Plus r est élevé, plus on stocke de paramètres entraînables, de gradients, et d'états d'optimiseur (moments Adam) pour ces paramètres. Le coût est O(r × (d+k)) par couche ciblée."}
+      ]
+    },
+    8: {
+      title: "Slide 8 — Processus d'optimisation et d'entraînement",
+      questions: [
+        {d:"facile",q:"Quelle est la fonction de perte utilisée pour les modèles de diffusion ?",a:"La MSE (Mean Squared Error) : L = E[‖ε − ε_θ(x_t, t, c)‖²]. On mesure l'erreur entre le bruit prédit et le vrai bruit."},
+        {d:"facile",q:"Quelle est la fonction de perte pour les LLMs ?",a:"La Cross-Entropy : L = −Σ log P_θ(y_i | y_{<i}, x). Le modèle prédit le prochain token et on minimise la log-vraisemblance négative."},
+        {d:"facile",q:"Que signifie 'W₀ gelé (0 gradient)' ?",a:"Le chemin principal avec les poids W₀ ne reçoit aucun gradient pendant l'entraînement. Ses valeurs ne changent jamais. Seules les matrices A et B sont mises à jour."},
+        {d:"facile",q:"Quels algorithmes de RL sont mentionnés pour les gradients de politique ?",a:"PPO (Proximal Policy Optimization) et SAC (Soft Actor-Critic)."},
+        {d:"facile",q:"Quelle est la fourchette typique du learning rate pour LoRA ?",a:"Entre 1e-4 et 1e-3, soit plus élevé que pour le full fine-tuning (qui utilise typiquement 1e-5 à 1e-4)."},
+        {d:"moyen",q:"Pourquoi le learning rate de LoRA est-il plus élevé que celui du full fine-tuning ?",a:"LoRA part d'un point stable (ΔW = 0) et n'entraîne que peu de paramètres. La surface de loss est plus lisse dans ce sous-espace réduit, permettant des pas plus grands. En full FT, modifier tous les paramètres simultanément crée des interactions complexes qui nécessitent des pas plus prudents."},
+        {d:"moyen",q:"Comment fonctionne la MSE de diffusion en termes concrets ?",a:"On ajoute du bruit ε à une image x₀ pour obtenir x_t. Le modèle reçoit x_t, le timestep t, et le conditionnement c (prompt). Il prédit le bruit ε_θ. La loss mesure la différence entre ε (vrai bruit) et ε_θ (bruit prédit). LoRA est entraîné pour que cette prédiction de bruit soit optimale sur les images de training."},
+        {d:"moyen",q:"Que signifie 'alpha (α) : facteur d'échelle' et comment interagit-il avec r ?",a:"Alpha est un hyperparamètre qui contrôle l'amplitude de la modification LoRA via le facteur α/r. Si α = r (choix courant), le facteur est 1 et n'a pas d'effet. Si α > r, les modifications LoRA sont amplifiées. Si α < r, elles sont atténuées. C'est un bouton de volume pour l'intensité de l'adaptation."},
+        {d:"moyen",q:"En RL, comment les gradients de politique sont-ils rétropropagés vers les chemins LoRA ?",a:"L'algorithme RL (PPO, SAC) calcule un gradient de la loss de politique. Ce gradient ne remonte que dans les matrices A et B via la chain rule, en passant par le bypass. Le backbone W₀ est traité comme une constante dans le graphe de calcul (requires_grad=False)."},
+        {d:"moyen",q:"Pourquoi dit-on qu'on entraîne '30 à 100 fois moins de paramètres' ?",a:"Par exemple, un modèle de 3,5B avec LoRA r=16 : si on cible les 4 matrices d'attention (Q,K,V,O) dans 24 couches, et chaque matrice est 768×768 : paramètres LoRA par matrice = 2 × 768 × 16 = 24 576. Total : 4 × 24 × 24 576 ≈ 2,4M paramètres, soit ~0,07% de 3,5B. Le ratio est donc d'environ 1:1500."},
+        {d:"difficile",q:"En quoi la loss de diffusion et la loss de cross-entropy optimisent-elles les matrices LoRA de manière fondamentalement différente ?",a:"La loss de diffusion est une erreur de reconstruction (MSE) : elle pousse les poids vers une prédiction de bruit précise pour chaque timestep. C'est une loss de régression. La cross-entropy est une loss de classification sur le vocabulaire : elle pousse les logits vers la bonne distribution de probabilité sur les tokens. Les gradients ont des propriétés différentes (magnitude, sparsité) qui influencent la dynamique d'apprentissage des matrices A et B."},
+        {d:"difficile",q:"Comment PPO et SAC diffèrent-ils dans leur interaction avec LoRA ?",a:"PPO est on-policy : il collecte des trajectoires, calcule un avantage, et met à jour via un ratio clippé. SAC est off-policy : il utilise un replay buffer et maximise l'entropie. Avec LoRA, PPO met à jour A et B à chaque batch de trajectoires (plus de variance), tandis que SAC peut utiliser des expériences passées (plus de stabilité). SAC nécessite aussi de stocker les Q-networks, mais seuls leurs chemins LoRA sont mis à jour."},
+        {d:"difficile",q:"Pourquoi l'absence de gradient sur W₀ réduit-elle drastiquement la mémoire nécessaire à l'optimiseur ?",a:"Adam stocke 2 moments (m et v) par paramètre entraînable en float32. Pour W₀ (3,5B params) : 2 × 3,5B × 4 bytes = ~28 Go de VRAM rien que pour l'optimiseur. Avec LoRA (~2M params) : 2 × 2M × 4 bytes = ~16 Mo. C'est un facteur de réduction de ~1700x sur le stockage de l'optimiseur."},
+        {d:"expert",q:"Comment le choix de α/r affecte-t-il la stabilité de l'entraînement en RL, où les gradients sont naturellement bruités ?",a:"En RL, les gradients de politique ont une haute variance. Un α/r élevé amplifie ces gradients bruités, ce qui peut déstabiliser l'entraînement (oscillations, divergence). En pratique, on utilise un α/r ≤ 1 et un learning rate conservateur pour le RL. La combinaison LoRA + PPO nécessite souvent un clipping plus agressif et un batch size plus large pour compenser la variance."},
+        {d:"expert",q:"Comment peut-on visualiser ou diagnostiquer que les gradients LoRA convergent bien pendant l'entraînement ?",a:"On peut surveiller : 1) La norme des gradients de A et B (devrait diminuer progressivement), 2) Les valeurs singulières de B·A (devrait se stabiliser), 3) La loss de training et de validation (gap = overfitting), 4) Le rang effectif de B·A (nombre de valeurs singulières non-négligeables), 5) La similarité cosinus entre les directions de gradient d'un batch à l'autre (devrait augmenter quand la convergence approche)."},
+        {d:"facile",q:"Quels sont les deux hyperparamètres clés de LoRA mentionnés sur la slide ?",a:"Le rang r et alpha (α), qui est le facteur d'échelle contrôlant l'amplitude via α/r."},
+        {d:"moyen",q:"Pourquoi utilise-t-on typiquement α = r ?",a:"Avec α = r, le facteur d'échelle α/r = 1, ce qui simplifie le tuning. On ne contrôle l'amplitude que via le learning rate, réduisant le nombre d'hyperparamètres à ajuster. C'est la valeur par défaut dans la plupart des implémentations."},
+        {d:"difficile",q:"Comment les gradients sparses en RL (récompenses rares) affectent-ils l'entraînement LoRA ?",a:"Avec des récompenses rares, le signal de gradient est très bruité et intermittent. LoRA peut être avantageux ici car le petit nombre de paramètres réduit la variance de l'estimation du gradient. Cependant, le faible rang peut aussi limiter la capacité à capturer des modifications complexes requises par un signal sparse. Des techniques comme le reward shaping ou la normalisation d'avantage deviennent encore plus importantes."},
+        {d:"expert",q:"En pratique, comment implémente-t-on le gel de W₀ dans PyTorch ?",a:"On met requires_grad=False sur les paramètres de W₀ : for param in model.parameters(): param.requires_grad = False. Puis on ajoute les modules LoRA (A et B) comme nn.Parameter ou nn.Linear avec requires_grad=True. L'optimiseur ne reçoit que les paramètres LoRA : optimizer = Adam(lora_params, lr=1e-4). Le graphe de calcul ne calcule pas de gradients pour W₀."},
+        {d:"moyen",q:"Que se passe-t-il si le learning rate est trop élevé pour LoRA ?",a:"Les matrices A et B sont mises à jour trop agressivement. Le produit B·A peut osciller ou diverger. Le modèle produit des sorties de mauvaise qualité (artefacts visuels, texte incohérent). En RL, la politique peut devenir instable et la performance s'effondrer (policy collapse)."}
+      ]
+    },
+    9: {
+      title: "Slide 9 — Résultats empiriques et efficacité",
+      questions: [
+        {d:"facile",q:"Quel modèle est utilisé comme benchmark pour les résultats LLM ?",a:"GPT-3 avec 175 milliards de paramètres."},
+        {d:"facile",q:"Quel score BLEU obtient LoRA (r=4) vs le Full Fine-Tuning ?",a:"LoRA (r=4) obtient ~34.2, le Full FT obtient ~34.0. LoRA est légèrement meilleur."},
+        {d:"facile",q:"Combien de paramètres LoRA (r=4) entraîne-t-il sur GPT-3 175B ?",a:"4,7 millions de paramètres, soit 0,003% des 175 milliards."},
+        {d:"facile",q:"De combien la VRAM est-elle réduite pour SDXL avec LoRA ?",a:"De 80 Go à 6 Go, soit une réduction de plus de 13x."},
+        {d:"facile",q:"Quelle réduction de données est obtenue en RL avec LoRA ?",a:"80% moins de données sont nécessaires pour adapter une politique robotique du simulateur au monde réel."},
+        {d:"moyen",q:"Pourquoi le résultat LoRA > Full FT sur BLEU est-il 'surprenant' ?",a:"Intuitivement, on s'attend à ce que plus de paramètres = meilleure performance. Mais LoRA avec 0,003% des paramètres fait mieux. Cela suggère un effet de régularisation : la contrainte de bas rang agit comme un régulariseur implicite, empêchant le surapprentissage et forçant le modèle à trouver des adaptations plus généralisables."},
+        {d:"moyen",q:"Que représente le score BLEU ?",a:"BLEU (Bilingual Evaluation Understudy) mesure la qualité de la traduction automatique en comparant les n-grammes de la traduction produite avec ceux de la référence. Un score plus élevé indique une meilleure correspondance. C'est une métrique standard en NLP."},
+        {d:"moyen",q:"Pourquoi la convergence est-elle 3 à 5 fois plus rapide en RL avec LoRA ?",a:"Moins de paramètres à optimiser signifie moins de dimensions dans l'espace de recherche. L'optimiseur converge plus vite dans un sous-espace de faible dimension. De plus, le backbone gelé fournit des représentations stables, et seules les adaptations fines sont apprises, réduisant la complexité de l'optimisation."},
+        {d:"moyen",q:"Comment le fichier sauvegardé passe-t-il de 7 Go à ~100 Mo ?",a:"En full FT, il faut sauvegarder tout le modèle modifié (3,5B params × 2 bytes en float16 ≈ 7 Go). Avec LoRA, on ne sauvegarde que les matrices A et B (quelques millions de paramètres × 2 bytes ≈ quelques dizaines à centaines de Mo). Le modèle de base W₀ est partagé et ne change pas."},
+        {d:"moyen",q:"Que signifie concrètement 'des centaines de LoRA pour le prix d'un seul modèle complet' ?",a:"Un modèle complet fait ~7 Go. 100 LoRA de 100 Mo = 10 Go. Donc pour ~10 Go de stockage, on a 100 variantes au lieu d'une. En RAM aussi : le backbone est chargé une fois, et on swap juste le petit fichier LoRA pour changer de variante."},
+        {d:"difficile",q:"Si LoRA r=4 fait mieux que le Full FT, pourquoi ne pas toujours utiliser r=4 ?",a:"Le score BLEU est une métrique sur une tâche spécifique (traduction). Sur d'autres tâches plus complexes ou sur des distributions de données très différentes du pré-entraînement, un rang plus élevé peut être nécessaire. De plus, la différence 34.0 vs 34.2 est dans la marge d'erreur. Le choix du rang dépend de la complexité de l'adaptation."},
+        {d:"difficile",q:"Pourquoi le résultat en RL (80% moins de données) est-il particulièrement significatif ?",a:"En robotique réelle, chaque donnée coûte cher à collecter (temps de robot, usure mécanique, supervision humaine). Réduire de 80% le besoin en données signifie un transfert sim-to-real bien plus rapide et économique. C'est la différence entre un transfert faisable et non faisable pour beaucoup d'équipes de robotique."},
+        {d:"difficile",q:"Comment expliquer que 0,003% des paramètres suffisent pour atteindre la même performance ?",a:"C'est la manifestation directe de l'hypothèse de faible dimension intrinsèque. Les changements nécessaires pour adapter GPT-3 à la traduction vivent dans un sous-espace de dimension ~4,7M dans un espace de 175B. La plupart des 175B paramètres sont déjà bien calibrés par le pré-entraînement. Le fine-tuning ne fait que de petits ajustements dans les bonnes directions."},
+        {d:"expert",q:"Le résultat LoRA > Full FT peut-il être expliqué par la théorie du double descent ou par la régularisation implicite ?",a:"Oui, la théorie du double descent suggère que dans le régime sur-paramétré (Full FT sur 175B), le modèle peut overfitter malgré une grande capacité. LoRA contraint l'optimisation à un sous-espace de rang r, ce qui est une forme de régularisation implicite forte. Cette contrainte empêche le modèle de mémoriser et le force à trouver des solutions de bas rang, souvent plus généralisables. C'est analogue au dropout ou au weight decay mais de nature structurelle."},
+        {d:"expert",q:"Comment QLoRA combine-t-il LoRA avec la quantification pour des gains encore plus importants ?",a:"QLoRA quantifie le modèle de base W₀ en 4 bits (NormalFloat4) pour réduire la mémoire, puis ajoute des matrices LoRA en float16/bfloat16 pour l'entraînement. Le modèle de base utilise ~4x moins de VRAM, et les gradients ne passent que par les matrices LoRA en précision supérieure. Cela permet d'entraîner un modèle de 70B paramètres sur un seul GPU 48 Go."},
+        {d:"facile",q:"Combien de fois la convergence est-elle plus rapide en RL avec LoRA ?",a:"3 à 5 fois plus rapide que le full fine-tuning."},
+        {d:"moyen",q:"Pourquoi la réduction de VRAM de 80 Go à 6 Go est-elle qualifiée de 'spectaculaire' ?",a:"Parce que 80 Go nécessite un GPU A100 à ~10 000€, tandis que 6 Go est disponible sur un GPU grand public comme une RTX 3060 à ~300€. C'est la démocratisation de l'accès au fine-tuning : n'importe qui avec un GPU gaming peut adapter un modèle de 3,5B paramètres."},
+        {d:"expert",q:"Les résultats BLEU de LoRA sont-ils statistiquement significatifs par rapport au Full FT ?",a:"La différence 34.0 vs 34.2 est probablement dans la marge d'erreur statistique (intervals de confiance qui se chevauchent). Le point important n'est pas que LoRA est meilleur, mais qu'il est au moins aussi bon avec 30 000x moins de paramètres. La signification est dans l'efficacité, pas dans une supériorité marginale du score."},
+        {d:"difficile",q:"Quel est l'impact du choix de rang sur la taille du fichier LoRA sauvegardé ?",a:"La taille est proportionnelle à r. Pour un modèle de dimension d=768, 24 couches, 4 matrices : taille ≈ 4 × 24 × 2 × 768 × r × 2 bytes. Avec r=4 : ~1.2 Mo. Avec r=16 : ~4.8 Mo. Avec r=64 : ~19 Mo. Le scaling est linéaire en r, ce qui reste très petit par rapport aux 7 Go du modèle complet."},
+        {d:"moyen",q:"Pourquoi le résultat '80% moins de données en RL' est-il lié à la préservation du backbone ?",a:"Le backbone gelé conserve les représentations apprises en simulation (compréhension de l'espace, de la physique approximative, des patterns de mouvement). Le LoRA n'a besoin de capturer que le 'delta' entre simulation et réalité. Ce delta est plus simple que d'apprendre la tâche de zéro, d'où le besoin réduit en données."}
+      ]
+    },
+    10: {
+      title: "Slide 10 — Limites connues et heuristiques",
+      questions: [
+        {d:"facile",q:"Combien de limites de LoRA sont présentées sur cette slide ?",a:"Quatre limites : choix empirique du rang, heuristiques des cibles, interférence multi-LoRA, et rigidité architecturale."},
+        {d:"facile",q:"Pourquoi le choix du rang r est-il considéré comme 'empirique' ?",a:"Parce qu'il n'existe pas de théorie unifiée pour déterminer le rang optimal a priori. On procède par essais et erreurs."},
+        {d:"facile",q:"Que signifie 'interférence multi-LoRA' ?",a:"Quand on fusionne plusieurs LoRA (style + agent RL + domaine), les modifications peuvent se contredire dans les espaces latents, dégradant les performances."},
+        {d:"facile",q:"Que signifie 'rigidité architecturale' de LoRA ?",a:"LoRA ne modifie pas les LayerNorms ni les embeddings de base. Il est inefficace pour des changements fondamentaux d'architecture ou de vocabulaire."},
+        {d:"moyen",q:"Donnez un exemple concret d'interférence entre deux LoRA.",a:"Un LoRA entraîné pour un style 'peinture à l'huile' et un LoRA pour un personnage spécifique peuvent interférer : le style de peinture pourrait déformer les traits du personnage, ou le personnage pourrait casser les textures du style. Les deux adaptations opèrent dans des sous-espaces potentiellement contradictoires."},
+        {d:"moyen",q:"Pourquoi LoRA ne peut-il pas modifier les LayerNorms ?",a:"LoRA est conçu pour les couches de projection linéaire (matrices W). Les LayerNorms ne sont pas des projections linéaires mais des couches de normalisation avec des paramètres de scale et shift. Leur structure (peu de paramètres, rôle de normalisation) ne se prête pas à la décomposition de bas rang. On pourrait les fine-tuner directement (comme BitFit pour les biais) mais ce n'est pas du LoRA."},
+        {d:"moyen",q:"Que sont TIES-Merging et DARE mentionnés dans le contexte de la fusion multi-LoRA ?",a:"TIES-Merging (Trim, Elect, Merge) réduit les interférences en éliminant les paramètres de faible magnitude et en résolvant les conflits de signe. DARE (Drop and Rescale) supprime aléatoirement des modifications et rescale le reste. Les deux visent à rendre la fusion multi-LoRA plus robuste mais ne résolvent pas tous les problèmes."},
+        {d:"moyen",q:"Pourquoi le choix entre couches profondes et superficielles est-il important ?",a:"Les couches superficielles traitent les features de bas niveau (textures, formes simples) tandis que les couches profondes traitent les concepts sémantiques de haut niveau (objets, relations). Selon la tâche, il peut être plus pertinent de cibler l'un ou l'autre. Pour un changement de style → couches profondes. Pour des détails fins → couches superficielles."},
+        {d:"difficile",q:"Comment l'incompatibilité entre versions de modèle de base affecte-t-elle les LoRA existants ?",a:"Un LoRA est entraîné comme un delta par rapport à un W₀ spécifique. Si le modèle de base change (SDXL → SD3), les poids W₀ sont complètement différents. Le delta appris n'a plus de sens : W_nouveau + B·A ≠ résultat attendu. Les représentations internes ont changé, donc le LoRA est inutilisable sur le nouveau modèle. Il faut le ré-entraîner."},
+        {d:"difficile",q:"Comment LoRA Probe permet-il d'identifier les couches les plus importantes ?",a:"LoRA Probe consiste à entraîner des LoRA indépendants sur différentes couches/matrices et à mesurer l'impact de chacun sur la performance. Les couches dont le LoRA individuel produit le plus grand gain sont les plus importantes. On peut ensuite concentrer le budget de paramètres sur ces couches pour une efficacité maximale."},
+        {d:"difficile",q:"En théorie, pourrait-on créer un LoRA qui modifie le vocabulaire du modèle ? Pourquoi est-ce difficile ?",a:"Le vocabulaire est lié à la couche d'embedding et à la tête de prédiction, qui ont des dimensions fixées par la taille du vocabulaire. LoRA ne peut pas changer la dimension de sortie de ces couches. Ajouter un nouveau token nécessite d'ajouter une ligne dans la matrice d'embedding, ce qui modifie son nombre de lignes — incompatible avec le principe de LoRA qui ne change pas les dimensions."},
+        {d:"difficile",q:"Pourquoi la fusion de LoRA dans des espaces latents contradictoires pose-t-elle problème mathématiquement ?",a:"Si LoRA₁ apprend ΔW₁ = B₁·A₁ dans un sous-espace S₁ et LoRA₂ apprend ΔW₂ = B₂·A₂ dans S₂, la somme ΔW₁ + ΔW₂ n'est pas garantie d'être cohérente si S₁ et S₂ se chevauchent de manière contradictoire. Les composantes de chevauchement peuvent s'annuler, s'amplifier, ou créer des directions aberrantes. C'est un problème de non-linéarité : le modèle optimal pour la combinaison n'est pas la combinaison des optima individuels."},
+        {d:"expert",q:"Comparez les limites de LoRA avec celles de DoRA (Weight-Decomposed LoRA). DoRA résout-il certaines de ces limites ?",a:"DoRA décompose les poids en magnitude et direction, appliquant LoRA sur la direction uniquement. Cela peut réduire les problèmes de rang insuffisant pour certaines adaptations (meilleure expressivité à rang égal) et améliorer la stabilité de l'entraînement. Cependant, DoRA ne résout pas l'interférence multi-LoRA, l'incompatibilité entre versions, ni la rigidité architecturale. C'est une amélioration incrémentale, pas une solution à toutes les limites."},
+        {d:"expert",q:"Comment la notion de 'dimension effective' varie-t-elle entre les couches d'un transformeur ?",a:"Les couches profondes ont souvent une dimension effective plus faible (les features sont plus abstraites et régulières), tandis que les couches superficielles ont une dimension effective plus élevée (les features sont plus variées et bas-niveau). Cela signifie qu'un rang uniforme pour toutes les couches est sous-optimal : les couches profondes pourraient utiliser r=4 tandis que les superficielles bénéficieraient de r=16."},
+        {d:"facile",q:"Pourquoi cibler W_q et W_v est-il une norme 'empirique' et non théorique ?",a:"Parce que ce choix vient d'expériences qui ont montré que c'est souvent le meilleur compromis, mais il n'y a pas de preuve mathématique que c'est optimal pour toutes les tâches."},
+        {d:"moyen",q:"Quels artefacts visuels peut-on observer quand on fine-tune un LoRA sur moins de 5 images ?",a:"Répétition du fond des images de training, poses figées dans les mêmes positions que les exemples, textures qui se répètent de manière reconnaissable, et parfois des éléments parasites (objets de fond qui apparaissent systématiquement). C'est de la mémorisation visuelle."},
+        {d:"expert",q:"Comment les méthodes d'allocation de rang adaptif (AdaLoRA) tentent-elles de résoudre le problème du choix empirique du rang ?",a:"AdaLoRA commence avec un rang élevé pour toutes les couches, puis 'prune' itérativement les directions les moins importantes (valeurs singulières les plus faibles) pendant l'entraînement. Le rang final s'adapte automatiquement par couche selon l'importance détectée. Cela élimine le besoin de choisir r manuellement et distribue le budget de paramètres de manière optimale entre les couches."},
+        {d:"moyen",q:"Pourquoi la qualité du LoRA est-elle bornée par la qualité du modèle de base ?",a:"LoRA ne fait que de petites modifications à un modèle existant. Si le modèle de base n'a pas les représentations nécessaires pour une tâche (par exemple, un modèle entraîné uniquement sur des photos ne peut pas bien dessiner des dessins animés), le LoRA ne peut pas inventer ces représentations. Il ne peut qu'ajuster ce qui existe déjà."},
+        {d:"difficile",q:"Comment les problèmes d'interférence multi-LoRA se comparent-ils au problème classique de multi-task learning ?",a:"C'est fondamentalement le même problème : des tâches qui partagent des représentations mais avec des objectifs potentiellement conflictuels. En multi-task learning classique, les gradients de différentes tâches peuvent s'opposer (gradient conflict). Avec multi-LoRA, la fusion additive assume que les adaptations sont complémentaires, ce qui n'est pas garanti. Les solutions (TIES, DARE) sont analogues aux techniques de gradient surgery en multi-task."}
+      ]
+    },
+    11: {
+      title: "Slide 11 — Positionnement dans l'écosystème d'adaptation",
+      questions: [
+        {d:"facile",q:"Quelles sont les quatre techniques comparées dans le tableau ?",a:"LoRA, DreamBooth, ControlNet, et IP-Adapter."},
+        {d:"facile",q:"Quel est le coût de LoRA vs DreamBooth ?",a:"LoRA a un coût très faible, DreamBooth a un coût très élevé (car c'est un full fine-tuning)."},
+        {d:"facile",q:"Quel technique offre un excellent contrôle spatial ?",a:"ControlNet est la seule technique avec un excellent contrôle spatial (pose, profondeur, contours)."},
+        {d:"facile",q:"Que signifie 'Zero-shot' pour IP-Adapter ?",a:"IP-Adapter peut conditionner la génération sur une image de référence sans aucun entraînement préalable. Il fonctionne dès la première utilisation avec n'importe quelle image."},
+        {d:"facile",q:"Quelle combinaison est fréquemment utilisée selon la slide ?",a:"DreamBooth + LoRA (sujet + efficacité) et ControlNet + LoRA (style + pose)."},
+        {d:"moyen",q:"Pourquoi DreamBooth + LoRA est-il la combinaison la plus populaire ?",a:"On utilise la stratégie de données de DreamBooth (rare token '[V]', images de régularisation pour contrer l'oubli catastrophique) mais on n'entraîne que les matrices LoRA au lieu de tout le modèle. Résultat : qualité quasi-identique à DreamBooth complet, mais coût dramatiquement réduit (6 Go au lieu de 24 Go, fichier de 100 Mo au lieu de 7 Go)."},
+        {d:"moyen",q:"Comment ControlNet et LoRA sont-ils complémentaires ?",a:"ControlNet contrôle le QUOI spatiallement (pose, profondeur, contours de l'image). LoRA contrôle le COMMENT stylistiquement (style artistique, apparence du sujet). Ensemble, on peut générer un personnage spécifique (LoRA) dans une pose spécifique (ControlNet). Ils opèrent à des niveaux différents du pipeline."},
+        {d:"moyen",q:"Comment IP-Adapter découple-t-il les cross-attentions texte/image ?",a:"IP-Adapter ajoute un encodeur d'image CLIP qui produit des embeddings de l'image de référence. Ces embeddings sont injectés dans des couches de cross-attention séparées de celles du texte. Le modèle a donc deux sources de conditionnement indépendantes : le texte (style, contexte) et l'image de référence (contenu visuel)."},
+        {d:"moyen",q:"Pourquoi LoRA n'offre-t-il pas de contrôle spatial natif ?",a:"LoRA modifie les projections d'attention mais ne crée pas de nouvelles branches de conditionnement spatial. Pour le contrôle spatial, il faut des signaux de guidage (cartes de profondeur, poses) injectés via des convolutions supplémentaires (comme ControlNet). LoRA opère dans l'espace des features, pas dans l'espace spatial."},
+        {d:"difficile",q:"Comment la prior preservation loss de DreamBooth fonctionne-t-elle ?",a:"DreamBooth ajoute à la loss standard une pénalité qui force le modèle à continuer de bien générer pour la classe générale (ex: 'chien') en plus du sujet spécifique (ex: 'mon chien Fido'). On génère des images de la classe ('chien') avec le modèle original comme données de régularisation, et on les utilise pendant l'entraînement pour contrer l'oubli catastrophique."},
+        {d:"difficile",q:"Comment ControlNet copie-t-il l'encodeur du UNet et pourquoi utilise-t-il des convolutions zéro-initialisées ?",a:"ControlNet clone tout l'encodeur du UNet (moitié du modèle). Le clone reçoit le signal de contrôle (pose, profondeur). Ses sorties sont injectées dans le décodeur du UNet original via des convolutions zéro-initialisées. L'initialisation à zéro garantit que ControlNet ne perturbe pas le modèle au début de l'entraînement (même principe que B=0 dans LoRA). La copie de l'encodeur assure une capacité suffisante pour comprendre les signaux spatiaux."},
+        {d:"difficile",q:"Comparez la taille des fichiers sauvegardés pour chaque technique.",a:"LoRA : ~50-150 Mo (matrices A et B seulement). DreamBooth : ~7 Go (modèle complet modifié). ControlNet : ~1.5-3 Go (copie de l'encodeur). IP-Adapter : ~100-500 Mo (encodeur image + couches de cross-attention supplémentaires). LoRA est de loin le plus léger."},
+        {d:"difficile",q:"Pourquoi dit-on que LoRA 'sert de ciment' dans les pipelines multimodaux modernes ?",a:"Parce que LoRA peut être combiné avec toutes les autres techniques sans conflit architectural. On peut avoir un backbone + LoRA style + ControlNet pose + IP-Adapter référence, tous fonctionnant ensemble. LoRA ne modifie pas l'architecture (grâce à la fusion), donc il n'interfère pas avec les modules ajoutés par ControlNet ou IP-Adapter. Il 'cimente' les composantes en fournissant la couche de personnalisation commune."},
+        {d:"expert",q:"Comment les architectures DiT (Diffusion Transformer) comme FLUX changent-elles l'application de LoRA ?",a:"Les DiT remplacent le UNet par un transformeur pur, ce qui est en fait plus naturel pour LoRA (conçu pour les transformeurs). Les couches d'attention dans DiT sont les mêmes Q,K,V,O que dans un LLM. LoRA s'applique de manière identique. Cependant, les DiT peuvent avoir des architectures d'attention différentes (joint attention texte-image) et des embeddings de timestep différents, nécessitant de reconsidérer quelles couches cibler."},
+        {d:"expert",q:"Comment le concept de 'compositionnalité' des LoRA peut-il être amélioré à l'avenir ?",a:"Plusieurs pistes : 1) LoRA orthogonaux : entraîner des LoRA dans des sous-espaces orthogonaux pour garantir l'absence d'interférence. 2) LoRA hiérarchiques : organiser les LoRA par niveaux (base → style → sujet) avec des priorités. 3) Routing dynamique : un routeur appris qui combine les LoRA de manière optimale selon le prompt. 4) Théorie de la composition : développer des garanties mathématiques sur la qualité des fusions."},
+        {d:"facile",q:"Quelle est la synthèse en bas de la slide ?",a:"LoRA n'est pas un outil isolé. Il occupe le point optimal du compromis qualité/coût et sert de ciment dans les pipelines multimodaux modernes."},
+        {d:"moyen",q:"Qu'est-ce qu'un 'rare token' dans le contexte DreamBooth ?",a:"C'est un token inhabituel (ex: 'sks', '[V]') associé au sujet spécifique pendant l'entraînement. Comme le token est rare dans le vocabulaire du modèle, il a peu de sémantique pré-existante, permettant au modèle de lui associer exclusivement le sujet cible sans conflit avec des concepts existants."},
+        {d:"expert",q:"Comment le modèle gère-t-il simultanément LoRA + ControlNet + IP-Adapter pendant l'inférence ?",a:"LoRA est fusionné dans les poids (zéro surcoût). ControlNet est une branche parallèle qui traite le signal spatial et injecte ses features dans le décodeur. IP-Adapter ajoute des couches de cross-attention séparées pour l'image de référence. Les trois opèrent à des niveaux différents : LoRA (poids), ControlNet (features spatiales), IP-Adapter (conditionnement image). Le modèle fait un forward pass unique intégrant les trois contributions."},
+        {d:"moyen",q:"Pourquoi IP-Adapter est-il classé 'Bon (Zero-shot)' en style/sujet plutôt qu'Excellent ?",a:"Parce que le zero-shot est moins expressif qu'un entraînement dédié. IP-Adapter capture le style/sujet d'une image de référence via un encodeur CLIP, mais CLIP a des limitations (il encode des concepts sémantiques, pas des détails fins). Un LoRA entraîné sur 20 images du sujet capturera plus de nuances qu'un IP-Adapter utilisant une seule image de référence."},
+        {d:"difficile",q:"Pourquoi DreamBooth a-t-il une 'faible compatibilité multi-usage' dans le tableau ?",a:"Parce que DreamBooth modifie tout le modèle. Chaque variante (sujet A, sujet B) nécessite un modèle complet séparé (~7 Go). On ne peut pas facilement switcher entre variantes ou les combiner. Avec LoRA, on charge un LoRA différent (~100 Mo) sur le même backbone, permettant des centaines de variantes avec un seul modèle de base."}
+      ]
+    }
+  }
+};
+
+let state = {
+  person: 1,
+  slide: null,
+  allOpen: false,
+  filters: new Set(["facile","moyen","difficile","expert"])
+};
+
+function init() {
+  renderPersonTabs();
+  selectPerson(1);
+}
+
+function renderPersonTabs() {
+  const c = document.getElementById('personTabs');
+  c.innerHTML = DATA.persons.map(p => `
+    <div class="person-tab ${state.person===p.id?'active':''}" onclick="selectPerson(${p.id})">
+      <div class="name">${p.name}</div>
+      <div class="slides-info">Slides ${p.slides.join(', ')} — ${p.theme}</div>
+    </div>
+  `).join('');
+}
+
+function selectPerson(id) {
+  state.person = id;
+  const p = DATA.persons.find(x=>x.id===id);
+  state.slide = p.slides[0];
+  renderPersonTabs();
+  renderSlideTabs();
+  renderQuestions();
+}
+
+function renderSlideTabs() {
+  const p = DATA.persons.find(x=>x.id===state.person);
+  const c = document.getElementById('slideTabs');
+  c.innerHTML = p.slides.map(s => `
+    <div class="slide-tab ${state.slide===s?'active':''}" onclick="selectSlide(${s})">Slide ${s}</div>
+  `).join('');
+}
+
+function selectSlide(s) {
+  state.slide = s;
+  state.allOpen = false;
+  renderSlideTabs();
+  renderQuestions();
+}
+
+function renderQuestions() {
+  const sd = DATA.slides[state.slide];
+  if (!sd) return;
+  document.getElementById('slideTitle').textContent = sd.title;
+
+  renderFilters();
+
+  const filtered = sd.questions.filter(q => state.filters.has(q.d));
+  document.getElementById('counter').textContent = `${filtered.length} / ${sd.questions.length} questions`;
+  document.getElementById('btnToggle').textContent = state.allOpen ? 'Tout fermer' : 'Tout ouvrir';
+
+  const c = document.getElementById('questions');
+  c.innerHTML = filtered.map((q, i) => `
+    <div class="question-card ${state.allOpen?'open':''}" id="qc${i}">
+      <div class="question-header" onclick="toggleQ(${i})">
+        <span class="q-number">Q${i+1}</span>
+        <span class="q-diff ${q.d}">${q.d}</span>
+        <span class="q-text">${q.q}</span>
+        <span class="q-chevron">›</span>
+      </div>
+      <div class="answer"><p>${q.a}</p></div>
+    </div>
+  `).join('');
+}
+
+function renderFilters() {
+  const c = document.getElementById('filterRow');
+  c.innerHTML = ["facile","moyen","difficile","expert"].map(d => `
+    <span class="pill ${state.filters.has(d)?'on':''}" data-d="${d}" onclick="toggleFilter('${d}')">${d}</span>
+  `).join('');
+}
+
+function toggleFilter(d) {
+  if (state.filters.has(d)) state.filters.delete(d);
+  else state.filters.add(d);
+  renderQuestions();
+}
+
+function toggleQ(i) {
+  document.getElementById('qc'+i).classList.toggle('open');
+}
+
+function toggleAll() {
+  state.allOpen = !state.allOpen;
+  renderQuestions();
+}
+
+init();
+</script>
+</div>
+</body>
+</html>
